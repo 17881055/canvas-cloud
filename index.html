@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>three.js canvas - particles - waves</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <style>
+        body {
+				background-color: #000000;
+				margin: 0px;
+				overflow: hidden;
+			}
+	</style>
+</head>
+
+<body>
+    <link href="./css/style.css" rel="stylesheet" />
+    <script type="text/javascript" src="js/lib/three.min.js"></script>
+    <script type="text/javascript" src="js/lib/Projector.js"></script>
+    <script type="text/javascript" src="js/lib/jquery-1.8.3.min.js"></script>
+    <script type="text/javascript" src="js/lib/CanvasRenderer.js"></script>
+
+    <script type="text/javascript" src="js/element/Bg.js"></script>
+    <script type="text/javascript" src="js/uilts/requestAnimationFrame.js"></script>
+    <script type="text/javascript" src="js/uilts/tween.min.js"></script>
+
+    <script>
+        document.body.style.background = 'url(' + Bg.toDataURL('image/png') + ')';
+        var container;
+        var camera, scene, renderer, particle;
+        var mouseX = 0,
+            mouseY = 0;
+        var windowHalfX = window.innerWidth / 2;
+        var windowHalfY = window.innerHeight / 2;
+        init();
+        animate();
+
+        function init() {
+
+            container = document.createElement('div');
+            document.body.appendChild(container);
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 5000);
+            camera.position.z = 50;
+
+            scene = new THREE.Scene();
+
+            /* var axes = new THREE.AxisHelper(20);
+            scene.add(axes); */
+
+            var texture = THREE.ImageUtils.loadTexture('images/cloud.png');
+
+            scene.fog = new THREE.FogExp2(0xffffff, 0.001);
+
+            for (var i = 0; i < 600; i++) {
+
+                var material = new THREE.SpriteMaterial({
+                    map: texture,
+                    fog: false,
+                    rotation: Math.PI / Math.random() * 1 - .5,
+                });
+
+                particle = new THREE.Sprite(material);
+                initParticle(particle, i * 5);
+
+                scene.add(particle);
+            }
+
+            renderer = new THREE.WebGLRenderer({
+                alpha: true
+            });
+            // renderer.shadowMapEnabled = true;
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            container.appendChild(renderer.domElement);
+
+            document.addEventListener('mousemove', onDocumentMouseMove, false);
+            document.addEventListener('touchstart', onDocumentTouchStart, false);
+            document.addEventListener('touchmove', onDocumentTouchMove, false);
+
+            //
+            window.addEventListener('resize', onWindowResize, false);
+
+        }
+
+        function onWindowResize() {
+
+            windowHalfX = window.innerWidth / 2;
+            windowHalfY = window.innerHeight / 2;
+
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+
+            renderer.setSize(window.innerWidth, window.innerHeight);
+
+        }
+
+
+        function initParticle(particle, delay) {
+
+            var particle = this instanceof THREE.Sprite ? this : particle;
+            var delay = delay !== undefined ? delay : 0;
+
+            particle.position.set(Math.random() * 0, Math.random() * 5 - 5, Math.random() * 5 - 5);
+            particle.scale.x = particle.scale.y = Math.random() * 1;
+            particle.material.opacity = 0;
+
+            new TWEEN.Tween(particle)
+                .delay(delay)
+                .to({}, 1100)
+                .onComplete(initParticle)
+                .start();
+
+            new TWEEN.Tween(particle.material)
+                .delay(delay)
+                .to({
+                    opacity: .3
+                }, 500)
+                .start();
+
+            new TWEEN.Tween(particle.position)
+                .delay(Math.random() * delay)
+                .to({
+                    x: Math.random() * 200 - 100,
+                    y: Math.random() * 50 - 60,
+                    z: 50,
+                }, 1000)
+                .start();
+
+            var scaleXY = 20
+            new TWEEN.Tween(particle.scale)
+                .delay(Math.random() * delay)
+                .to({
+                    x: scaleXY,
+                    y: scaleXY,
+                }, 500)
+                .start();
+
+        }
+
+
+        function onDocumentMouseMove(event) {
+
+            mouseX = (event.clientX - windowHalfX);
+            mouseY = (event.clientY - windowHalfY);
+        }
+
+        function onDocumentTouchStart(event) {
+
+            if (event.touches.length == 1) {
+
+                event.preventDefault();
+
+                mouseX = event.touches[0].pageX - windowHalfX;
+                mouseY = event.touches[0].pageY - windowHalfY;
+
+            }
+
+        }
+
+        function onDocumentTouchMove(event) {
+
+            if (event.touches.length == 1) {
+                event.preventDefault();
+                mouseX = event.touches[0].pageX - windowHalfX;
+                mouseY = event.touches[0].pageY - windowHalfY;
+            }
+
+        }
+
+        //
+
+        function animate() {
+
+            requestAnimationFrame(animate);
+
+            render();
+
+        }
+
+        function render() {
+
+            TWEEN.update();
+            camera.position.x += (mouseX - camera.position.x) * 0.001;
+            camera.position.y += (-mouseY - camera.position.y) * 0.002;
+            console.log(camera.position.x, camera.position.y);
+
+            if (camera.position.y >= 10) {
+                camera.position.y = 10;
+            } else if (camera.position.y < -10) {
+                camera.position.y = -10;
+            }
+
+            if (camera.position.x >= 20) {
+                camera.position.x = 20;
+            } else if (camera.position.x < -20) {
+                camera.position.x = -20;
+            }
+            camera.lookAt(scene.position);
+
+            renderer.render(scene, camera);
+
+        }
+    </script>
+</body>
+
+</html>

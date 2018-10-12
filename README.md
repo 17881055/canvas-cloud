@@ -1,1 +1,1 @@
-canvas-clouds
+canvas-cloud
