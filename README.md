@@ -3,7 +3,7 @@ canvas 天空系列
 
 使用 H5 cavnvas 生产动画
 
-# demo : https://wellwell.wang/canvas_galaxy/
+# demo : https://wellwell.wang/canvas_cloud/
 
 
 # 效果图：
